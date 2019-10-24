@@ -2,7 +2,7 @@
 
 namespace GeekBurger.Payment.Contract
 {
-    public class Payment
+    public class NewPayment
     {
         public Guid OrderId { get; private set; }
 
