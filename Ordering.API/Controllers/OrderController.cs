@@ -10,7 +10,6 @@ namespace Ordering.API.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-
         // GET api/order
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
@@ -29,13 +28,26 @@ namespace Ordering.API.Controllers
         public async Task<ActionResult> ReceiveOrderAsync([FromQuery] NewOrder order)
         {
             // Envia a solicitação para o microserviço de pagamento para processar o mesmo.
-
-
-            //Salva na base de dados esta solicitação para historico
+            // Requisição Service Bus
+            
+            //Grava na base de dados
 
             //Retorna mensagem de sucesso.
 
             return Ok();
         }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        /// <summary>
+        /// Método responsável por enviar mensagem de pagamento negado a API de produção
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> CancelProductionAsync()
+        {
+            return Ok();
+        }
+       
+
     }
 }
