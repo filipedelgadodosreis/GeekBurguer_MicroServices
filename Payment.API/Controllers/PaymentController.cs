@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GeekBurger.Payment.Contract;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -17,11 +18,31 @@ namespace Payment.API.Controllers
 
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> ReceiveOrderAsync([FromQuery] NewPayment payment)
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<ActionResult> ReceivePaymentAsync([FromQuery] NewPayment payment)
+        {
+            //Tratar HTTP Status
+            
+            //Envia para fila de processamento
+
+            //salva na base de dados
+
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<ActionResult> SetPaidOrderStatusAsync([FromQuery] NewPayment payment)
         {
             //Tratar HTTP Status
 
 
+            //Processa o pagamento
+
+
+            //salva na base de dados
 
             return Ok();
         }
