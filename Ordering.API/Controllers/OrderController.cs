@@ -1,7 +1,12 @@
 ﻿using GeekBurger.Ordering.Contract;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Ordering.API.Controllers
@@ -10,6 +15,15 @@ namespace Ordering.API.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
+        private Task _task;
+
+        public OrderController(IConfiguration configuration, Task task)
+        {
+            _configuration = configuration;
+            _task = task;
+        }
+
         // GET api/order
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
@@ -27,10 +41,10 @@ namespace Ordering.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult> ReceiveOrderAsync([FromQuery] NewOrder order)
         {
-            // Envia a solicitação para o microserviço de pagamento para processar o mesmo.
-            // Requisição Service Bus
-            
-            //Grava na base de dados
+            // Envia a solicitação para a fila
+            SendMessagesAsync(order);
+
+            //Grava no mongoDB
 
             //Retorna mensagem de sucesso.
 
@@ -47,7 +61,28 @@ namespace Ordering.API.Controllers
         {
             return Ok();
         }
-       
 
+        public async void SendMessagesAsync(NewOrder order)
+        {
+            if (_task != null && !_task.IsCompleted)
+                return;
+
+            string connectionString = _configuration["serviceBus:connectionString"];
+            TopicClient topicClient = new TopicClient(connectionString, "Pedido");
+            byte[] orderByteArray = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(order));
+
+            Message message = new Message
+            {
+                Body = orderByteArray,
+                MessageId = Guid.NewGuid().ToString(),
+                Label = order.OrderId.ToString()
+            };
+
+            _task = topicClient.SendAsync(message);
+            await _task;
+
+            var closeTask = topicClient.CloseAsync();
+            await closeTask;
+        }
     }
 }
