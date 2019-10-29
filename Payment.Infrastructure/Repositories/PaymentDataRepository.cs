@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Payment.API;
 using Payment.Domain.Model;
 using System;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ namespace Payment.Infrastructure.Repositories
     {
         private readonly PaymentDataContext _context;
 
-        public PaymentDataRepository(IOptions<PaymentSettings> settings)
+        public PaymentDataRepository(IOptions<PaymentDatabaseSettings> settings)
         {
             _context = new PaymentDataContext(settings) ?? throw new ArgumentNullException(nameof(settings));
         }

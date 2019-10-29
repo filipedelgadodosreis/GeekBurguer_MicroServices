@@ -35,31 +35,95 @@ namespace EventBusServiceBus
 
         public void Publish(IntegrationEvent @event)
         {
-            throw new NotImplementedException();
+            var eventName = @event.GetType().Name.Replace(INTEGRATION_EVENT_SUFIX, "");
+            var jsonMessage = JsonConvert.SerializeObject(@event);
+            var body = Encoding.UTF8.GetBytes(jsonMessage);
+
+            var message = new Message
+            {
+                MessageId = Guid.NewGuid().ToString(),
+                Body = body,
+                Label = eventName,
+            };
+
+            var topicClient = _serviceBusPersisterConnection.CreateModel();
+
+            topicClient.SendAsync(message)
+                .GetAwaiter()
+                .GetResult();
+        }
+
+
+        public void SubscribeDynamic<TH>(string eventName)
+            where TH : IDynamicIntegrationEventHandler
+        {
+            //_logger.LogInformation("Subscribing to dynamic event {EventName} with {EventHandler}", eventName, nameof(TH));
+
+            _subsManager.AddDynamicSubscription<TH>(eventName);
         }
 
         public void Subscribe<T, TH>()
             where T : IntegrationEvent
             where TH : IIntegrationEventHandler<T>
         {
-            throw new NotImplementedException();
-        }
+            var eventName = typeof(T).Name.Replace(INTEGRATION_EVENT_SUFIX, "");
 
-        public void SubscribeDynamic<TH>(string eventName) where TH : IDynamicIntegrationEventHandler
-        {
-            throw new NotImplementedException();
+            var containsKey = _subsManager.HasSubscriptionsForEvent<T>();
+            if (!containsKey)
+            {
+                try
+                {
+                    _subscriptionClient.AddRuleAsync(new RuleDescription
+                    {
+                        Filter = new CorrelationFilter { Label = eventName },
+                        Name = eventName
+                    }).GetAwaiter().GetResult();
+                }
+                catch (ServiceBusException)
+                {
+                    //_logger.LogWarning("The messaging entity {eventName} already exists.", eventName);
+                }
+            }
+
+            //_logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName, nameof(TH));
+
+            _subsManager.AddSubscription<T, TH>();
         }
 
         public void Unsubscribe<T, TH>()
             where T : IntegrationEvent
             where TH : IIntegrationEventHandler<T>
         {
-            throw new NotImplementedException();
+            var eventName = typeof(T).Name.Replace(INTEGRATION_EVENT_SUFIX, "");
+
+            try
+            {
+                _subscriptionClient
+                 .RemoveRuleAsync(eventName)
+                 .GetAwaiter()
+                 .GetResult();
+            }
+            catch (MessagingEntityNotFoundException)
+            {
+                //_logger.LogWarning("The messaging entity {eventName} Could not be found.", eventName);
+            }
+
+            //_logger.LogInformation("Unsubscribing from event {EventName}", eventName);
+
+            _subsManager.RemoveSubscription<T, TH>();
         }
 
-        public void UnsubscribeDynamic<TH>(string eventName) where TH : IDynamicIntegrationEventHandler
+        public void UnsubscribeDynamic<TH>(string eventName)
+            where TH : IDynamicIntegrationEventHandler
         {
-            throw new NotImplementedException();
+            //_logger.LogInformation("Unsubscribing from dynamic event {EventName}", eventName);
+
+            _subsManager.RemoveDynamicSubscription<TH>(eventName);
+        }
+
+        public void Dispose()
+        {
+            _subsManager.Clear();
         }
 
         private void RemoveDefaultRule()

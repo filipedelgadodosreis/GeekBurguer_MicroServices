@@ -22,7 +22,9 @@ namespace Payment.API.Application.Commands
 
             //await _paymentDataRepository.UpdateLocationAsync(userMarketingData);
 
-            _paymentDataRepository.Add(command.)
+            //_paymentDataRepository.Add(command)
+
+            return true;
         }
     }
 }
