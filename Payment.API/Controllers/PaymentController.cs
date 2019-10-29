@@ -31,6 +31,22 @@ namespace Payment.API.Controllers
             return Ok();
         }
 
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<ActionResult> ProcessPaymentAsync([FromQuery] NewPayment payment)
+        {
+            //Tratar HTTP Status
+
+            //Envia para fila de processamento
+
+            //salva na base de dados
+
+
+            return Ok();
+        }
+
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
