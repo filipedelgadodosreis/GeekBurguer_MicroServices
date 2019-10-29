@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Ordering.API.Mongo.Repositories;
 
 namespace Ordering.API.Controllers
 {
@@ -17,11 +18,13 @@ namespace Ordering.API.Controllers
     {
         private readonly IConfiguration _configuration;
         private Task _task;
+        private readonly OrderMongoRepository _orderMongoRepository;
 
-        public OrderController(IConfiguration configuration, Task task)
+        public OrderController(IConfiguration configuration, Task task, Mongo.Repositories.OrderMongoRepository orderMongoRepository)
         {
             _configuration = configuration;
             _task = task;
+            _orderMongoRepository = orderMongoRepository;
         }
 
         // GET api/order
@@ -39,16 +42,16 @@ namespace Ordering.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> ReceiveOrderAsync([FromQuery] NewOrder order)
+        public async Task<ActionResult> ReceiveOrderAsync([FromQuery] Order order)
         {
             // Envia a solicitação para a fila
             SendMessagesAsync(order);
 
             //Grava no mongoDB
+            _orderMongoRepository.Add(order);
 
             //Retorna mensagem de sucesso.
-
-            return Ok();
+            return Ok(order);
         }
 
         [HttpPost]
@@ -62,13 +65,13 @@ namespace Ordering.API.Controllers
             return Ok();
         }
 
-        public async void SendMessagesAsync(NewOrder order)
+        public async void SendMessagesAsync(Order order)
         {
             if (_task != null && !_task.IsCompleted)
                 return;
 
             string connectionString = _configuration["serviceBus:connectionString"];
-            TopicClient topicClient = new TopicClient(connectionString, "Pedido");
+            TopicClient topicClient = new TopicClient(connectionString, "orders");
             byte[] orderByteArray = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(order));
 
             Message message = new Message

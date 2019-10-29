@@ -20,8 +20,15 @@ namespace Ordering.API
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddCustomMVC(Configuration)
-                    .AddSwagger();
+            services.AddCustomMVC(Configuration).AddSwagger();
+
+            // Obter a connection do MongoDB
+            services.Configure<Mongo.Dtos.ConnectionStringDto>(Configuration.GetSection("ConnectionStrings"));
+            services.AddOptions();
+
+            // DI
+            services.AddSingleton<Mongo.Helpers.MongoHelper>();
+            services.AddSingleton<Mongo.Repositories.OrderMongoRepository>();
 
             var container = new ContainerBuilder();
             container.Populate(services);

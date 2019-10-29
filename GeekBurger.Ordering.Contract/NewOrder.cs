@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GeekBurger.Ordering.Contract
 {
-    public class NewOrder
+    public class Order
     {
         public Guid OrderId { get; private set; }
 
