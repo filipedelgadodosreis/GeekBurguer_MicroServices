@@ -154,7 +154,7 @@ namespace EventBusServiceBus
                         await _subscriptionClient.CompleteAsync(message.SystemProperties.LockToken);
                     }
                 },
-                new MessageHandlerOptions(ExceptionReceivedHandler) { MaxConcurrentCalls = 10, AutoComplete = false });
+                new MessageHandlerOptions(ExceptionReceivedHandler) { MaxConcurrentCalls = 3, AutoComplete = false });
         }
 
         private Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
