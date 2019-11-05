@@ -1,14 +1,15 @@
-﻿using GeekBurger.Ordering.Contract;
+﻿using GeekBurger.UI.Contract;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Ordering.API.Mongo.Repositories;
+using Ordering.API.Sql.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Ordering.API.Mongo.Repositories;
 
 namespace Ordering.API.Controllers
 {
@@ -18,13 +19,13 @@ namespace Ordering.API.Controllers
     {
         private readonly IConfiguration _configuration;
         private Task _task;
-        private readonly OrderMongoRepository _orderMongoRepository;
+        private readonly OrderSqlRepository _orderSqlRepository;
 
-        public OrderController(IConfiguration configuration, Task task, Mongo.Repositories.OrderMongoRepository orderMongoRepository)
+        public OrderController(IConfiguration configuration, OrderSqlRepository orderSqlRepository)
         {
             _configuration = configuration;
-            _task = task;
-            _orderMongoRepository = orderMongoRepository;
+            _orderSqlRepository = orderSqlRepository;
+            _task = null;
         }
 
         // GET api/order
@@ -38,36 +39,31 @@ namespace Ordering.API.Controllers
         /// Método responsável por enviar a solicitação de 
         /// processamento de pagamento ao microserviço de pagamentos
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> ReceiveOrderAsync([FromQuery] Order order)
+        public async Task<ActionResult> ReceiveOrderAsync([FromQuery] NewOrderMessage request)
         {
             // Envia a solicitação para a fila
-            SendMessagesAsync(order);
+            SendMessagesAsync(request);
 
-            //Grava no mongoDB
-            _orderMongoRepository.Add(order);
+            // Grava no mongoDB
+            //_orderMongoRepository.Add(order);
 
-            //Retorna mensagem de sucesso.
-            return Ok(order);
+            // Grava no Sql
+            _orderSqlRepository.Add(request);
+
+            // Retorna mensagem de sucesso.
+            return Ok("Pedido cadastrado com sucesso");
         }
 
-        [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        /// <summary>
-        /// Método responsável por enviar mensagem de pagamento negado a API de produção
-        /// </summary>
-        /// <returns></returns>
-        public async Task<ActionResult> CancelProductionAsync()
+        public async void SendMessagesAsync(NewOrderMessage order)
         {
-            return Ok();
-        }
+            try
+            {
 
-        public async void SendMessagesAsync(Order order)
-        {
-            if (_task != null && !_task.IsCompleted)
+           if (_task != null && !_task.IsCompleted)
                 return;
 
             string connectionString = _configuration["serviceBus:connectionString"];
@@ -86,6 +82,14 @@ namespace Ordering.API.Controllers
 
             var closeTask = topicClient.CloseAsync();
             await closeTask;
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
     }
 }

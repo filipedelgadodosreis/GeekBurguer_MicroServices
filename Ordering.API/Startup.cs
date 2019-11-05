@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Ordering.API.Dtos;
+using Ordering.API.Sql.Repositories;
 using System;
+using System.Threading.Tasks;
 
 namespace Ordering.API
 {
@@ -22,13 +25,10 @@ namespace Ordering.API
         {
             services.AddCustomMVC(Configuration).AddSwagger();
 
-            // Obter a connection do MongoDB
-            services.Configure<Mongo.Dtos.ConnectionStringDto>(Configuration.GetSection("ConnectionStrings"));
-            services.AddOptions();
-
             // DI
-            services.AddSingleton<Mongo.Helpers.MongoHelper>();
-            services.AddSingleton<Mongo.Repositories.OrderMongoRepository>();
+            services.AddTransient<OrderSqlRepository>();
+            services.AddTransient<Task>();
+            services.AddTransient<OrderSqlRepository>();
 
             var container = new ContainerBuilder();
             container.Populate(services);

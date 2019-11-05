@@ -1,8 +1,8 @@
-﻿using GeekBurger.Ordering.Contract;
+﻿using GeekBurger.UI.Contract;
 using MongoDB.Bson;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using Ordering.API.Mongo.Helpers;
+using System.Collections.Generic;
 
 namespace Ordering.API.Mongo.Repositories
 {
@@ -15,14 +15,13 @@ namespace Ordering.API.Mongo.Repositories
             _mongoHelper = mongoHelper;
         }
 
-        public void Add(Order request)
+        public void Add(NewOrderMessage request)
         {
             var collection = _mongoHelper.MongoDatabase.GetCollection<BsonDocument>("order");
             var bsonDocumentRequest = new BsonDocument(
                 new Dictionary<string, string> {
                     { "OrderId", request.OrderId.ToString() },
                     { "StoreId", request.StoreId.ToString() },
-                    { "Total", request.Total },
                     { "Products", JsonConvert.SerializeObject(request.Products) }
                 }
             );

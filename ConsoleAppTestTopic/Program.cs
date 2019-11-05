@@ -1,4 +1,4 @@
-﻿using GeekBurger.Ordering.Contract;
+﻿using GeekBurger.UI.Contract;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 using System;
@@ -70,7 +70,7 @@ namespace ConsoleAppTestTopic
             order.OrderId = Guid.NewGuid();
             order.StoreId = Guid.NewGuid();
 
-            order.Products = new List<Product>
+            order.Products = new List<ProductMessage>
             {
                 SetProducts()
             };
@@ -84,12 +84,12 @@ namespace ConsoleAppTestTopic
 
         }
 
-        static Product SetProducts()
+        static ProductMessage SetProducts()
         {
-            var product = new Product();
+            var product = new ProductMessage();
 
             product.ProductId = Guid.NewGuid();
-            product.Price = 10.2;
+            //product.Price = 10.2;
 
             return product;
         }
@@ -103,7 +103,7 @@ namespace ConsoleAppTestTopic
 
         public string Total { get; set; }
 
-        public List<Product> Products { get; set; }
+        public List<ProductMessage> Products { get; set; }
 
         public List<Guid> ProductionIds { get; set; }
 

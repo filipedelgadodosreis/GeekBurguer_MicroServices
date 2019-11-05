@@ -1,4 +1,4 @@
-﻿namespace Ordering.API.Mongo.Dtos
+﻿namespace Ordering.API.Dtos
 {
     public class ConnectionStringDto
     {
