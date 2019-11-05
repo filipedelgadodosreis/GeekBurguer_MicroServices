@@ -12,13 +12,14 @@ namespace Ordering.API.Sql.Repositories
         {
             try
             {
-                string sqlInsertOrder = "INSERT INTO Order (OrderId, StoreId) Values (@OrderId, @StoreId)";
+                string sqlInsertOrder = "INSERT INTO Orders (OrderId, StoreId) Values (@OrderId, @StoreId)";
                 string sqlInsertProduct = " INSERT INTO Product (ProductId, OrderId) Values (@ProductId, @OrderId)";
 
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     connection.Execute(sqlInsertOrder, new { @OrderId = request.OrderId, @StoreId = request.StoreId });
 
+                    if (request.Products == null || request.Products.Count == 0) return;
                     foreach (var product in request.Products)
                     {
                         connection.Execute(sqlInsertProduct, new { @ProductId = product.ProductId, @OrderId = request.OrderId });
