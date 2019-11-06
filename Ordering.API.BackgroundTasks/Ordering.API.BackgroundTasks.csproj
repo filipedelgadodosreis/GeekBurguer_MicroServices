@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <UserSecretsId>e808a570-2f95-4b73-b664-2b9e5f12cd7a</UserSecretsId>
+    <UserSecretsId>c9512ed1-7230-4e4f-9df6-0f1cd28672c0</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
@@ -19,13 +19,13 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.5" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.1.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.Http" Version="5.2.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EventBus\EventBus.csproj" />
-    <ProjectReference Include="..\ServiceBusMessaging\ServiceBusMessaging.csproj" />
     <ProjectReference Include="..\ServiceBus\ServiceBus.csproj" />
   </ItemGroup>
 

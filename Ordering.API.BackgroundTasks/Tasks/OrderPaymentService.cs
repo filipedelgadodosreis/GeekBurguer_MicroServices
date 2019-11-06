@@ -3,24 +3,23 @@ using EventBus.Abstractions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Payment.BackgroundTasks.Configuration;
-using Payment.BackgroundTasks.IntegrationEvents;
+using Ordering.API.BackgroundTasks.Configuration;
+using Ordering.API.BackgroundTasks.IntegrationEvents;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Payment.BackgroundTasks.Tasks
+namespace Ordering.API.BackgroundTasks.Tasks
 {
-    public class ReceivePaymentService : BackgroundService
+    public class OrderPaymentService : BackgroundService
     {
         private readonly IEventBus _eventBus;
         private readonly BackgroundTaskSettings _settings;
-        private readonly ILogger<ReceivePaymentService> _logger;
+        private readonly ILogger<OrderPaymentService> _logger;
 
-
-        public ReceivePaymentService(ILogger<ReceivePaymentService> logger, IOptions<BackgroundTaskSettings> settings, IEventBus eventBus)
+        public OrderPaymentService(ILogger<OrderPaymentService> logger, IOptions<BackgroundTaskSettings> settings, IEventBus eventBus)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
@@ -29,20 +28,20 @@ namespace Payment.BackgroundTasks.Tasks
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogDebug("ReceivePaymentService iniciando.");
+            _logger.LogDebug("OrderPaymentService iniciando.");
 
-            stoppingToken.Register(() => _logger.LogDebug("#1 ReceivePaymentService background task pausando."));
+            stoppingToken.Register(() => _logger.LogDebug("#1 OrderPaymentService background task pausando."));
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogDebug("ReceivePaymentService background task em execução.");
+                _logger.LogDebug("OrderPaymentService background task em execução.");
 
                 SendPayment();
 
-                await Task.Delay(100, stoppingToken);
+                await Task.Delay(_settings.CheckUpdateTime, stoppingToken);
             }
 
-            _logger.LogDebug("ReceivePaymentService background task pausando.");
+            _logger.LogDebug("OrderPaymentService background task pausando.");
 
             await Task.CompletedTask;
         }
@@ -57,7 +56,7 @@ namespace Payment.BackgroundTasks.Tasks
             {
                 var orderPaymentIntegrationEvent = new OrderPaymentIntegrationEvent(Guid.NewGuid());
 
-                _logger.LogInformation("----- Publishing integration event: {IntegrationEventId} from {AppName} - ({@IntegrationEvent})", orderPaymentSuccededIntegrationEvent.OrderId, Program.AppName, orderPaymentSuccededIntegrationEvent);
+                _logger.LogInformation("----- Publishing integration event: {IntegrationEventId} from {AppName} - ({@IntegrationEvent})", orderPaymentIntegrationEvent.OrderId, Program.AppName, orderPaymentIntegrationEvent);
 
                 _eventBus.Publish(orderPaymentIntegrationEvent);
             }
