@@ -2,13 +2,14 @@
 using Autofac.Extensions.DependencyInjection;
 using EventBus;
 using EventBus.Abstractions;
-using EventBusServiceBus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ServiceBus;
 using System;
 
 namespace Payment.API
@@ -81,10 +82,12 @@ namespace Payment.API
         {
             services.AddSingleton<IServiceBusPersisterConnection>(sp =>
             {
-                var serviceBusConnectionString = configuration["EventBusConnection"];
-                var serviceBusConnection = new ServiceBusConnectionStringBuilder(serviceBusConnectionString);
+                var logger = sp.GetRequiredService<ILogger<DefaultServiceBusPersisterConnection>>();
 
-                return new DefaultServiceBusPersisterConnection(serviceBusConnection);
+                var serviceBusConnectionString = configuration["EventBusConnection"];
+                var topicName = "";
+
+                return new DefaultServiceBusPersisterConnection(serviceBusConnectionString, logger, topicName);
             });
 
             return services;
@@ -94,13 +97,15 @@ namespace Payment.API
         {
             var subscriptionClientName = configuration["SubscriptionClientName"];
 
-            services.AddSingleton<IEventBus, EventBusServiceBus.EventBusServiceBus>(sp =>
+            services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
             {
-                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-                var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
                 var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+                var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
+                var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+                var topicName = "";
 
-                return new EventBusServiceBus.EventBusServiceBus(serviceBusPersisterConnection, subscriptionClientName, eventBusSubcriptionsManager, iLifetimeScope);
+                return new EventBusServiceBus(serviceBusPersisterConnection,topicName ,logger, eventBusSubcriptionsManager, subscriptionClientName, iLifetimeScope);
             });
 
             services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();

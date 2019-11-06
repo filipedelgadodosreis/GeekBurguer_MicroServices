@@ -1,6 +1,10 @@
-﻿using GeekBurger.Ordering.Contract;
+﻿using ConsoleAppTestTopic.Events;
+using EventBus.Abstractions;
+using GeekBurger.Ordering.Contract;
 using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using ServiceBus;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,6 +18,8 @@ namespace ConsoleAppTestTopic
         const string TopicName = "processpayment";
         static ITopicClient topicClient;
 
+        const string INTEGRATION_EVENT_SUFIX = "IntegrationEvent";
+
         static void Main(string[] args)
         {
             MainAsync().GetAwaiter().GetResult();
@@ -21,22 +27,62 @@ namespace ConsoleAppTestTopic
 
         static async Task MainAsync()
         {
+            const int numberOfMessages = 10;
             topicClient = new TopicClient(ServiceBusConnectionString, TopicName);
 
             Console.WriteLine("======================================================");
             Console.WriteLine("Press ENTER key to exit after sending all the messages.");
             Console.WriteLine("======================================================");
 
+            //await SendMessagesAsync(numberOfMessages);
+
             // Send messages.
-            await SendMessagesAsync();
+            //await SendMessagesAsync();
+
+            PublishEvent(Guid.NewGuid());
+
             await topicClient.CloseAsync();
 
-            Console.ReadKey();
 
-        
+            Console.ReadKey();
         }
 
-        static async Task SendMessagesAsync()
+        static void PublishEvent(Guid Id)
+        {
+            IntegrationEvent orderPaymentIntegrationEvent;
+
+            orderPaymentIntegrationEvent = new OrderPaymentSuccededIntegrationEvent(Id);
+
+            Publish(orderPaymentIntegrationEvent);
+        }
+
+        static void Publish(IntegrationEvent @event)
+        {
+
+            try
+            {
+                var eventName = @event.GetType().Name.Replace(INTEGRATION_EVENT_SUFIX, "");
+                var jsonMessage = JsonConvert.SerializeObject(@event);
+                var body = Encoding.UTF8.GetBytes(jsonMessage);
+
+                var message = new Message
+                {
+                    MessageId = Guid.NewGuid().ToString(),
+                    Body = body,
+                    Label = eventName,
+                };
+
+                topicClient.SendAsync(message)
+                   .GetAwaiter()
+                   .GetResult();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"{DateTime.Now} :: Exception: {exception.Message}");
+            }
+        }
+
+        static async Task SendMessagesAsync(int numberOfMessagesToSend)
         {
             try
             {
@@ -45,17 +91,20 @@ namespace ConsoleAppTestTopic
 
                 byte[] orderByteArray = Encoding.UTF8.GetBytes(jsonMessage);
 
-                Message message = new Message
+                for (int i = 0; i < numberOfMessagesToSend; i++)
                 {
-                    Body = orderByteArray,
-                    MessageId = Guid.NewGuid().ToString(),
-                    Label = order.OrderId.ToString()
-                };
+                    Message message = new Message
+                    {
+                        Body = orderByteArray,
+                        MessageId = Guid.NewGuid().ToString(),
+                        Label = order.OrderId.ToString()
+                    };
 
-                Console.WriteLine($"Sending message: {jsonMessage}");
+                    Console.WriteLine($"Sending message: {jsonMessage}");
 
-                await topicClient.SendAsync(message);
+                    await topicClient.SendAsync(message);
 
+                }
             }
             catch (Exception exception)
             {

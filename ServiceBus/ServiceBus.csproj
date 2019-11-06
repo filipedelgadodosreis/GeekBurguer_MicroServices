@@ -1,18 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.9.4" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EventBus\EventBus.csproj" />
-    <ProjectReference Include="..\GeekBurger.Ordering.Contract\GeekBurger.Ordering.Contract.csproj" />
-    <ProjectReference Include="..\ServiceBus\ServiceBus.csproj" />
   </ItemGroup>
 
 </Project>
