@@ -1,14 +1,46 @@
-﻿using GeekBurger.Ordering.Contract;
+﻿using GeekBurger.UI.Contract;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Ordering.API.Sql.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Ordering.API.Mongo.Repositories;
+
+//USE [FIAP15]
+//GO
+
+///****** Object: Table [dbo].[Orders] Script Date: 04/11/2019 23:11:30 ******/
+//SET ANSI_NULLS ON
+//GO
+
+//SET QUOTED_IDENTIFIER ON
+//GO
+
+//CREATE TABLE [dbo].[Orders] (
+//    [Id]      INT           IDENTITY (1, 1) NOT NULL,
+//    [OrderId] VARCHAR (200) NULL,
+//    [StoreId] VARCHAR (200) NULL
+
+
+//USE [FIAP15]
+//GO
+
+///****** Object: Table [dbo].[Product] Script Date: 04/11/2019 23:11:01 ******/
+//SET ANSI_NULLS ON
+//GO
+
+//SET QUOTED_IDENTIFIER ON
+//GO
+
+//CREATE TABLE [dbo].[Product] (
+//    [Id]        INT           IDENTITY (1, 1) NOT NULL,
+//    [OrderId]   INT           NULL,
+//    [ProductId] VARCHAR (200) NULL
+//);
 
 namespace Ordering.API.Controllers
 {
@@ -18,13 +50,13 @@ namespace Ordering.API.Controllers
     {
         private readonly IConfiguration _configuration;
         private Task _task;
-        private readonly OrderMongoRepository _orderMongoRepository;
+        private readonly OrderSqlRepository _orderSqlRepository;
 
-        public OrderController(IConfiguration configuration, Task task, Mongo.Repositories.OrderMongoRepository orderMongoRepository)
+        public OrderController(IConfiguration configuration, OrderSqlRepository orderSqlRepository)
         {
             _configuration = configuration;
-            _task = task;
-            _orderMongoRepository = orderMongoRepository;
+            _orderSqlRepository = orderSqlRepository;
+            _task = null;
         }
 
         // GET api/order
@@ -38,54 +70,57 @@ namespace Ordering.API.Controllers
         /// Método responsável por enviar a solicitação de 
         /// processamento de pagamento ao microserviço de pagamentos
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> ReceiveOrderAsync([FromQuery] Order order)
+        public async Task<ActionResult> ReceiveOrderAsync([FromQuery] NewOrderMessage request)
         {
-            // Envia a solicitação para a fila
-            SendMessagesAsync(order);
+            // Buscar na fila 
+            SendMessagesAsync(request);
 
-            //Grava no mongoDB
-            _orderMongoRepository.Add(order);
+            // Grava no mongoDB
+            //_orderMongoRepository.Add(order);
 
-            //Retorna mensagem de sucesso.
-            return Ok(order);
+            // Grava no Sql
+            _orderSqlRepository.Add(request);
+
+            // Retorna mensagem de sucesso.
+            return Ok("Pedido cadastrado com sucesso");
         }
 
-        [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        /// <summary>
-        /// Método responsável por enviar mensagem de pagamento negado a API de produção
-        /// </summary>
-        /// <returns></returns>
-        public async Task<ActionResult> CancelProductionAsync()
+        public async void SendMessagesAsync(NewOrderMessage order)
         {
-            return Ok();
-        }
-
-        public async void SendMessagesAsync(Order order)
-        {
-            if (_task != null && !_task.IsCompleted)
-                return;
-
-            string connectionString = _configuration["serviceBus:connectionString"];
-            TopicClient topicClient = new TopicClient(connectionString, "orders");
-            byte[] orderByteArray = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(order));
-
-            Message message = new Message
+            try
             {
-                Body = orderByteArray,
-                MessageId = Guid.NewGuid().ToString(),
-                Label = order.OrderId.ToString()
-            };
 
-            _task = topicClient.SendAsync(message);
-            await _task;
+                if (_task != null && !_task.IsCompleted)
+                    return;
 
-            var closeTask = topicClient.CloseAsync();
-            await closeTask;
+                string connectionString = _configuration["serviceBus:connectionString"];
+                TopicClient topicClient = new TopicClient(connectionString, "orders");
+                byte[] orderByteArray = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(order));
+
+                Message message = new Message
+                {
+                    Body = orderByteArray,
+                    MessageId = Guid.NewGuid().ToString(),
+                    Label = order.OrderId.ToString()
+                };
+
+                _task = topicClient.SendAsync(message);
+                await _task;
+
+                var closeTask = topicClient.CloseAsync();
+                await closeTask;
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
     }
 }

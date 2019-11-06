@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GeekBurger.UI.Contract" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.0" />
   </ItemGroup>
 

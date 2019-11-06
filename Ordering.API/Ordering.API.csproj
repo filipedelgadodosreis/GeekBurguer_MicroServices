@@ -14,6 +14,10 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Dapper" Version="2.0.30" />
+    <PackageReference Include="GeekBurger.Ordering.Contract" Version="1.0.0" />
+    <PackageReference Include="GeekBurger.Products.Contract" Version="3.0.0" />
+    <PackageReference Include="GeekBurger.UI.Contract" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.0" />

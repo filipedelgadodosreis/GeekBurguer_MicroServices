@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Ordering.API.Mongo.Dtos;
+using Ordering.API.Dtos;
 
 namespace Ordering.API.Mongo.Helpers
 {
