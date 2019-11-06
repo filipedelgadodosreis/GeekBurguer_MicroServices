@@ -74,7 +74,7 @@ namespace Ordering.API.BackgroundTasks.Tasks
                 {
                     conn.Open();
                     orderIds = conn.Query<Guid>(
-                        @"SELECT OrderId FROM Order  
+                        @"SELECT [OrderId] FROM [Orders]  
                             WHERE DATEDIFF(minute, [OrderDate], GETDATE()) >= @PeriodTime
                             AND [OrderStatusId] = 1",
                         new { _settings.PeriodTime });

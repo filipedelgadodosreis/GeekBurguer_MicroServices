@@ -45,6 +45,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBusMessaging", "Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ordering.API.BackgroundTasks", "Ordering.API.BackgroundTasks\Ordering.API.BackgroundTasks.csproj", "{577EAE81-4085-4502-BA58-424CD0B56138}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{6A2C5120-EFE6-4B2E-8EA9-9B0C2F152561}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\Desktop\Create_Table.sql = ..\..\..\Desktop\Create_Table.sql
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +128,7 @@ Global
 		{75F88F41-05CD-4319-A896-F8A9091DBC69} = {9347B76A-D9FA-459D-8DD2-09E500C667A4}
 		{AECD8C80-DEEB-4129-B592-D242FF9B0181} = {9347B76A-D9FA-459D-8DD2-09E500C667A4}
 		{577EAE81-4085-4502-BA58-424CD0B56138} = {21D91EF9-F3FE-44D3-A5F0-7FCA22D2C775}
+		{6A2C5120-EFE6-4B2E-8EA9-9B0C2F152561} = {21D91EF9-F3FE-44D3-A5F0-7FCA22D2C775}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BD5C0A23-F05E-410C-BB84-FFFCE4303289}
