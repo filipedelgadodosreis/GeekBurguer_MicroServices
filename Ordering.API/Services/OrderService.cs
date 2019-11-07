@@ -28,7 +28,7 @@ namespace Ordering.API.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            EnsureTopicIsCreated();
+            EnsureTopicIsCreated("newOrder");
             EnsureSubscriptionIsCreated();
             GetOrder();
             return Task.CompletedTask;
@@ -72,17 +72,17 @@ namespace Ordering.API.Services
             subscriptionClient.RegisterMessageHandler(Handle, mo);
         }
 
-        private void EnsureTopicIsCreated()
+        private void EnsureTopicIsCreated(string topic)
         {
-            if (!_namespace.Topics.List().Any(topic => topic.Name.Equals("newOrder", StringComparison.InvariantCultureIgnoreCase)))
+            if (!_namespace.Topics.List().Any(t => t.Name.Equals(topic, StringComparison.InvariantCultureIgnoreCase)))
             {
-                _namespace.Topics.Define("newOrder").WithSizeInMB(1024).Create();
+                _namespace.Topics.Define(topic).WithSizeInMB(1024).Create();
             }
         }
 
         private void EnsureSubscriptionIsCreated()
         {
-            if (!_namespace.Topics.List().Any(topic => topic.Subscriptions.List().Any(s=>s.Name.Equals("mySubscrition", StringComparison.InvariantCultureIgnoreCase))))
+            if (!_namespace.Topics.List().Any(topic => topic.Subscriptions.List().Any(s => s.Name.Equals("mySubscrition", StringComparison.InvariantCultureIgnoreCase))))
             {
                 _namespace.Topics.GetByName("newOrder").Subscriptions.Define("mySubscrition").Create();
             }
@@ -97,7 +97,20 @@ namespace Ordering.API.Services
 
         private Task ExceptionHandle(ExceptionReceivedEventArgs arg)
         {
-            // Logar o erro 
+            string topic = "log";
+            EnsureTopicIsCreated(topic);
+            var connectionString = _configuration["serviceBus:connectionString"];
+            var topicClient = new TopicClient(connectionString, topic);
+
+            byte[] orderByteArray = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(arg));
+
+            Message message = new Message
+            {
+                Body = orderByteArray,
+                MessageId = Guid.NewGuid().ToString()
+            };
+
+            topicClient.SendAsync(message);
             return Task.CompletedTask;
         }
     }
