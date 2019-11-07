@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Application\" />
-    <Folder Include="wwwroot\" />
+    <Compile Remove="Application\**" />
+    <Compile Remove="wwwroot\**" />
+    <Content Remove="Application\**" />
+    <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="Application\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="Application\**" />
+    <None Remove="wwwroot\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,15 +26,13 @@
     <PackageReference Include="GeekBurger.UI.Contract" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Azure.Management.ServiceBus.Fluent" Version="1.27.2" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.ServiceBus" Version="2.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.9" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.10" />
     <PackageReference Include="MongoDB.Driver" Version="2.9.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="3.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\GeekBurger.Ordering.Contract\GeekBurger.Ordering.Contract.csproj" />
   </ItemGroup>
 
 </Project>

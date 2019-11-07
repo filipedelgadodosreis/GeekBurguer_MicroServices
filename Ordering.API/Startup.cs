@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Ordering.API.Dtos;
+using Ordering.API.Services;
 using Ordering.API.Sql.Repositories;
 using System;
 using System.Threading.Tasks;
@@ -26,9 +26,10 @@ namespace Ordering.API
             services.AddCustomMVC(Configuration).AddSwagger();
 
             // DI
-            services.AddTransient<OrderSqlRepository>();
-            services.AddTransient<Task>();
-            services.AddTransient<OrderSqlRepository>();
+            services.AddSingleton<OrderSqlRepository>();
+            services.AddSingleton<Task>();
+            services.AddSingleton<OrderSqlRepository>();
+            services.AddHostedService<OrderService>();
 
             var container = new ContainerBuilder();
             container.Populate(services);

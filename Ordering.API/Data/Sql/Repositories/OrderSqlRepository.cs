@@ -30,7 +30,6 @@ namespace Ordering.API.Sql.Repositories
             catch (System.Exception ex)
             {
 
-                throw ex;
             }
         }
     }

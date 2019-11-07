@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventBus\EventBus.csproj" />
-    <ProjectReference Include="..\GeekBurger.Ordering.Contract\GeekBurger.Ordering.Contract.csproj" />
     <ProjectReference Include="..\ServiceBus\ServiceBus.csproj" />
   </ItemGroup>
 
