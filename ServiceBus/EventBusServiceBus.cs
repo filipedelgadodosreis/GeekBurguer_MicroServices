@@ -32,35 +32,44 @@ namespace ServiceBus
             _subsManager = subsManager ?? new InMemoryEventBusSubscriptionsManager();
             _subscriptionClient = new SubscriptionClient(_serviceBusPersisterConnection.ServiceBusConnectionStringBuilder, topicName, subscriptionClientName);
 
-            //RemoveDefaultRule();
-            //RegisterSubscriptionClientMessageHandler();
+            RemoveDefaultRule();
+            RegisterSubscriptionClientMessageHandler();
         }
 
         public void Publish(IntegrationEvent @event)
         {
-            var eventName = @event.GetType().Name.Replace(INTEGRATION_EVENT_SUFIX, "");
-            var jsonMessage = JsonConvert.SerializeObject(@event);
-            var body = Encoding.UTF8.GetBytes(jsonMessage);
-
-            var message = new Message
+            try
             {
-                MessageId = Guid.NewGuid().ToString(),
-                Body = body,
-                Label = eventName,
-            };
+                var eventName = @event.GetType().Name.Replace(INTEGRATION_EVENT_SUFIX, "");
+                var jsonMessage = JsonConvert.SerializeObject(@event);
+                var body = Encoding.UTF8.GetBytes(jsonMessage);
 
-            var topicClient = _serviceBusPersisterConnection.CreateModel();
+                var message = new Message
+                {
+                    MessageId = Guid.NewGuid().ToString(),
+                    Body = body,
+                    Label = eventName,
+                };
 
-            topicClient.SendAsync(message)
-                .GetAwaiter()
-                .GetResult();
+                var topicClient = _serviceBusPersisterConnection.CreateModel();
+
+                topicClient.SendAsync(message)
+                    .GetAwaiter()
+                    .GetResult();
+
+                _logger.LogInformation($"Mensagem enviado com sucesso {message}. Json Message {jsonMessage}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error ao enviar item para o service bus:", ex);
+            }
         }
 
 
         public void SubscribeDynamic<TH>(string eventName)
             where TH : IDynamicIntegrationEventHandler
         {
-            //_logger.LogInformation("Subscribing to dynamic event {EventName} with {EventHandler}", eventName, nameof(TH));
+            _logger.LogInformation("Subscribing to dynamic event {EventName} with {EventHandler}", eventName, nameof(TH));
 
             _subsManager.AddDynamicSubscription<TH>(eventName);
         }
@@ -84,11 +93,11 @@ namespace ServiceBus
                 }
                 catch (ServiceBusException)
                 {
-                    //_logger.LogWarning("The messaging entity {eventName} already exists.", eventName);
+                    _logger.LogWarning("The messaging entity {eventName} already exists.", eventName);
                 }
             }
 
-            //_logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName, nameof(TH));
+            _logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName, nameof(TH));
 
             _subsManager.AddSubscription<T, TH>();
         }
@@ -108,10 +117,10 @@ namespace ServiceBus
             }
             catch (MessagingEntityNotFoundException)
             {
-                //_logger.LogWarning("The messaging entity {eventName} Could not be found.", eventName);
+                _logger.LogWarning("The messaging entity {eventName} Could not be found.", eventName);
             }
 
-            //_logger.LogInformation("Unsubscribing from event {EventName}", eventName);
+            _logger.LogInformation("Unsubscribing from event {EventName}", eventName);
 
             _subsManager.RemoveSubscription<T, TH>();
         }
@@ -119,7 +128,7 @@ namespace ServiceBus
         public void UnsubscribeDynamic<TH>(string eventName)
             where TH : IDynamicIntegrationEventHandler
         {
-            //_logger.LogInformation("Unsubscribing from dynamic event {EventName}", eventName);
+            _logger.LogInformation("Unsubscribing from dynamic event {EventName}", eventName);
 
             _subsManager.RemoveDynamicSubscription<TH>(eventName);
         }
@@ -140,7 +149,7 @@ namespace ServiceBus
             }
             catch (MessagingEntityNotFoundException)
             {
-                 _logger.LogError("A mensagem da entidade {DefaultRuleName} não pode ser encontrada.", RuleDescription.DefaultRuleName);
+                _logger.LogError("A mensagem da entidade {DefaultRuleName} não pode ser encontrada.", RuleDescription.DefaultRuleName);
             }
         }
 

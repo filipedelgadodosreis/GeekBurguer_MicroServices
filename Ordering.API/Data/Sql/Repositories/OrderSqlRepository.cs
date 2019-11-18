@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using GeekBurger.UI.Contract;
+using System;
 using System.Data.SqlClient;
 
 namespace Ordering.API.Sql.Repositories
@@ -12,12 +13,12 @@ namespace Ordering.API.Sql.Repositories
         {
             try
             {
-                string sqlInsertOrder = "INSERT INTO Orders (OrderId, StoreId) Values (@OrderId, @StoreId)";
+                string sqlInsertOrder = "INSERT INTO Orders (OrderId, StoreId,OrderDate,OrderStatusId) Values (@OrderId, @StoreId,@OrderDate,@OrderStatusId)";
                 string sqlInsertProduct = " INSERT INTO Product (ProductId, OrderId) Values (@ProductId, @OrderId)";
 
                 using (var connection = new SqlConnection(_connectionString))
                 {
-                    connection.Execute(sqlInsertOrder, new { @OrderId = request.OrderId, @StoreId = request.StoreId });
+                    connection.Execute(sqlInsertOrder, new { request.OrderId, request.StoreId, @OrderDate = DateTime.Now, @OrderStatusId = 1 });
 
                     if (request.Products == null || request.Products.Count == 0) return;
                     foreach (var product in request.Products)

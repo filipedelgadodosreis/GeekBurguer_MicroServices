@@ -2,14 +2,14 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Payment.API.Application.Commands
+namespace PaymentV2.API.Application.Commands
 {
-    public class SetPaidOrderStatusCommand : IRequest<bool>
+    public class ProcessPaymentCommand : IRequest<bool>
     {
         [DataMember]
         public Guid OrderId { get; private set; }
 
-        public SetPaidOrderStatusCommand(Guid orderId)
+        public ProcessPaymentCommand(Guid orderId)
         {
             OrderId = orderId;
         }

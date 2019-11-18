@@ -1,24 +1,14 @@
 ﻿USE [FIAP15]
 GO
 
-/****** Object: Table [dbo].[Orders] Script Date: 04/11/2019 23:11:30 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE TABLE [dbo].[Orders] (
     [Id]      INT           IDENTITY (1, 1) NOT NULL,
-    [OrderId] VARCHAR (200) NULL,
-    [StoreId] VARCHAR (200) NULL
+    [OrderId] uniqueidentifier default newid(),
+    [StoreId] uniqueidentifier default newid(),
+	[OrderDate] DATETIME NOT NULL,
+	[OrderStatusId] INT NOT NULL
+	)
 
-/****** Object: Table [dbo].[Product] Script Date: 04/11/2019 23:11:01 ******/
-GO
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[Product] (

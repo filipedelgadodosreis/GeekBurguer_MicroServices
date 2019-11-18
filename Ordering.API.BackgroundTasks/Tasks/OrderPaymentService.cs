@@ -38,7 +38,7 @@ namespace Ordering.API.BackgroundTasks.Tasks
 
                 SendPayment();
 
-                await Task.Delay(_settings.CheckUpdateTime, stoppingToken);
+                await Task.Delay(int.Parse(_settings.CheckUpdateTime), stoppingToken);
             }
 
             _logger.LogDebug("OrderPaymentService background task pausando.");
@@ -54,14 +54,12 @@ namespace Ordering.API.BackgroundTasks.Tasks
 
             foreach (var orderId in orderIds)
             {
-                var orderPaymentIntegrationEvent = new OrderPaymentIntegrationEvent(Guid.NewGuid());
+                var orderPaymentIntegrationEvent = new OrderPaymentIntegrationEvent(orderId);
 
                 _logger.LogInformation("----- Publishing integration event: {IntegrationEventId} from {AppName} - ({@IntegrationEvent})", orderPaymentIntegrationEvent.OrderId, Program.AppName, orderPaymentIntegrationEvent);
 
                 _eventBus.Publish(orderPaymentIntegrationEvent);
             }
-
-            _logger.LogDebug("Ordens processadas com sucesso!");
         }
 
         private IEnumerable<Guid> GetConfirmedOrders()
